@@ -1,68 +1,13 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signals Live Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { background: #0c0b1a; color: #fff; font-family: sans-serif; padding: 20px; }
-        .signal-card { background: #1a1a2e; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        h1 { text-align: center; color: #b794f4; }
-    </style>
-</head>
-<body>
-    <h1>Signals Live Dashboard</h1>
-    <div id="signals-container">
-        <!-- هنا ستظهر الإشارات تلقائياً -->
-        <p style="text-align:center;">جاري تحميل الإشارات...</p>
-    </div>
-
-    <script>
-        const supabaseUrl = 'https://bnfwhlvtxemldrcrhvhg.supabase.co';
-        const supabaseKey = 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik';
-        const client = supabase.createClient(supabaseUrl, supabaseKey);
-
-        async function fetchSignals() {
-            // جلب البيانات من الجدول
-            const { data, error } = await client
-                .from('signals')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error("خطأ:", error);
-                return;
-            }
-
-            const container = document.getElementById('signals-container');
-            container.innerHTML = ''; // تنظيف المحتوى
-
-            if (data.length === 0) {
-                container.innerHTML = '<p style="text-align:center;">لا توجد إشارات حالياً</p>';
-                return;
-            }
-
-            data.forEach(signal => {
-                container.innerHTML += `
-                    <div class="signal-card">
-                        <div>
-                            <strong>${signal.asset}</strong><br>
-                            <small>الاتجاه: ${signal.direction}</small>
-                        </div>
-                        <div>
-                            <strong>${signal.confidence}%</strong>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // تشغيل الوظيفة عند فتح الصفحة
-        fetchSignals();
-
-        // تحديث تلقائي كل 5 ثوانٍ
-        setInterval(fetchSignals, 5000);
-    </script>
-</body>
-</html>
+data.forEach(signal => {
+    container.innerHTML += `
+        <div class="signal-card">
+            <div>
+                <strong>${signal.asset || 'بدون اسم'}</strong><br>
+                <small>الاتجاه: ${signal.direction || 'غير محدد'}</small>
+            </div>
+            <div>
+                <strong>${signal.confidence || 0}%</strong>
+            </div>
+        </div>
+    `;
+});
