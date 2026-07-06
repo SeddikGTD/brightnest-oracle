@@ -13,25 +13,25 @@
         
         async function connect() {
             try {
-                statusDiv.innerText = "جاري الاتصال بقاعدة البيانات...";
-                const supabase = supabase.createClient(
+                statusDiv.innerText = "جاري الاتصال...";
+                // تغيير اسم المتغير إلى 'client' لتجنب التعارض
+                const client = supabase.createClient(
                     'https://bnfwhlvtxemldrcrhvhg.supabase.co', 
                     'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik'
                 );
                 
-                const { data, error } = await supabase.from('signals').select('*');
+                const { data, error } = await client.from('signals').select('*');
                 
                 if (error) {
                     statusDiv.innerText = "خطأ من قاعدة البيانات: " + error.message;
                 } else {
-                    statusDiv.innerText = "تم الاتصال! عدد البيانات: " + data.length;
+                    statusDiv.innerText = "تم الاتصال بنجاح! عدد البيانات: " + data.length;
                 }
             } catch (err) {
-                statusDiv.innerText = "خطأ تقني: " + err.message;
+                statusDiv.innerText = "خطأ: " + err.message;
             }
         }
         
-        // تشغيل الدالة
         connect();
     </script>
 </body>
