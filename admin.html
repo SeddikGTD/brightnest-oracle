@@ -1,20 +1,7 @@
-<script>
-    const client = supabase.createClient('https://bnfwhlvtxemldrcrhvhg.supabase.co', 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik');
-
-    async function addSignal() {
-        const asset = document.getElementById('asset').value;
-        const direction = document.getElementById('direction').value;
-        const confidence = parseInt(document.getElementById('confidence').value);
-
-        const { data, error } = await client.from('signals').insert([
-            { asset: asset, direction: direction, confidence: confidence }
-        ]);
-        
-        if (error) {
-            // هذا التنبيه سيخبرنا بالخطأ الحقيقي (مثلاً: Column not found)
-            alert("خطأ قاعدة البيانات: " + error.message + "\nالتفاصيل: " + error.details);
-        } else {
-            alert("تمت إضافة الإشارة بنجاح!");
-        }
+const { data, error } = await client.from('signals').insert([
+    { 
+        asset: asset, 
+        direction: direction, 
+        confidence: confidence 
     }
-</script>
+]);
