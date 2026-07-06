@@ -1,13 +1,38 @@
-data.forEach(signal => {
-    container.innerHTML += `
-        <div class="signal-card">
-            <div>
-                <strong>${signal.asset || 'بدون اسم'}</strong><br>
-                <small>الاتجاه: ${signal.direction || 'غير محدد'}</small>
-            </div>
-            <div>
-                <strong>${signal.confidence || 0}%</strong>
-            </div>
-        </div>
-    `;
-});
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Signals Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #0c0b1a; color: #fff; font-family: sans-serif; padding: 20px; }
+        .signal-card { background: #1a1a2e; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <h1>الإشارات الحية</h1>
+    <div id="signals-container"></div>
+
+    <script>
+        const client = supabase.createClient('https://bnfwhlvtxemldrcrhvhg.supabase.co', 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik');
+
+        async function fetchSignals() {
+            const { data, error } = await client.from('signals').select('*');
+            const container = document.getElementById('signals-container');
+            container.innerHTML = ''; 
+            
+            if (data) {
+                data.forEach(signal => {
+                    container.innerHTML += `
+                        <div class="signal-card">
+                            <strong>${signal.asset || 'بدون اسم'}</strong><br>
+                            الاتجاه: ${signal.direction || 'غير محدد'} | الثقة: ${signal.confidence || 0}%
+                        </div>
+                    `;
+                });
+            }
+        }
+        fetchSignals();
+    </script>
+</body>
+</html>
