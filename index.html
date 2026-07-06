@@ -2,20 +2,16 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>BrightNest Oracle - Neon Dashboard</title>
+    <title>BrightNest Oracle - Auto Sync</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #050505; color: #fff; padding: 10px; }
         h2 { text-align: center; color: #0ff; text-shadow: 0 0 10px #0ff; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #1a1a1a; color: #f0f; padding: 12px; border-bottom: 2px solid #f0f; }
         td { padding: 12px; border-bottom: 1px solid #333; text-align: center; color: #fff; }
-        
-        /* تأثيرات النيون */
         .buy { color: #0f0; text-shadow: 0 0 8px #0f0; }
         .sell { color: #f00; text-shadow: 0 0 8px #f00; }
         .wait { color: #ff0; text-shadow: 0 0 8px #ff0; }
-        
-        tr:hover { background: #111; }
     </style>
 </head>
 <body>
@@ -33,24 +29,18 @@
         <tbody id="tableBody"></tbody>
     </table>
 
-    <!-- صوت تنبيه احترافي -->
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const client = supabase.createClient('https://bnfwhlvtxemldrcrhvhg.supabase.co', 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik');
-        let previousData = []; // لحفظ البيانات السابقة للمقارنة
 
         async function loadSignals() {
             const { data, error } = await client.from('signals').select('*');
-            if (error) return;
-
-            // التحقق من وجود تغيير لإطلاق التنبيه
-            const currentDataString = JSON.stringify(data);
-            if (previousData.length > 0 && JSON.stringify(previousData) !== currentDataString) {
-                document.getElementById('alertSound').play();
+            if (error) {
+                document.getElementById('status').innerText = "خطأ: " + error.message;
+                return;
             }
-            previousData = data;
 
             document.getElementById('status').style.display = 'none';
             document.getElementById('signalsTable').style.display = 'table';
@@ -58,17 +48,24 @@
             body.innerHTML = "";
             
             data.forEach(item => {
-                let signalClass = item.direction === 'شراء' ? 'buy' : (item.direction === 'بيع' ? 'sell' : 'wait');
+                // الكود الذكي: يبحث عن اسم العمود بأي صيغة كانت
+                let asset = item.asset || item.Asset || 'N/A';
+                let dir = item.direction || item.Direction || 'انتظار';
+                let price = item.price || item.Price || '0.00';
+                let per = item.percentage || item.Percentage || '0';
+
+                let signalClass = dir === 'شراء' ? 'buy' : (dir === 'بيع' ? 'sell' : 'wait');
+                
                 body.innerHTML += `<tr>
-                    <td>${item.symbol}</td>
-                    <td class="${signalClass}">${item.direction}</td>
-                    <td>${item.price}</td>
-                    <td>${item.percentage}%</td>
+                    <td>${asset}</td>
+                    <td class="${signalClass}">${dir}</td>
+                    <td>${price}</td>
+                    <td>${per}%</td>
                 </tr>`;
             });
         }
         
-        setInterval(loadSignals, 5000); // تحديث كل 5 ثوانٍ
+        setInterval(loadSignals, 5000);
         loadSignals();
     </script>
 </body>
