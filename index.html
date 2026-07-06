@@ -2,84 +2,67 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>SignalXpert Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signals Live Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #0c0b1a; color: #fff; padding: 10px; margin: 0; }
-        h2 { text-align: center; color: #b794f4; margin-bottom: 20px; font-size: 1.2em; }
-        
-        .signal-card {
-            background: #1a1a2e;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid #333;
-        }
-
-        /* المربع الصغير على اليسار */
-        .signal-box {
-            width: 70px;
-            height: 50px;
-            border: 2px solid #ffd700;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-        }
-
-        /* معلومات الزوج والسعر على اليمين */
-        .info-box { text-align: left; }
-        .symbol { font-weight: bold; font-size: 1.1em; }
-        .details { font-size: 0.85em; color: #aaa; margin-top: 5px; }
-
-        /* الألوان */
-        .buy { border-color: #0f0; color: #0f0; }
-        .sell { border-color: #f00; color: #f00; }
-        .wait { border-color: #ffd700; color: #ffd700; }
+        body { background: #0c0b1a; color: #fff; font-family: sans-serif; padding: 20px; }
+        .signal-card { background: #1a1a2e; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        h1 { text-align: center; color: #b794f4; }
     </style>
 </head>
 <body>
-    <h2>Signals Live Dashboard</h2>
-    <div id="container"></div>
+    <h1>Signals Live Dashboard</h1>
+    <div id="signals-container">
+        <!-- هنا ستظهر الإشارات تلقائياً -->
+        <p style="text-align:center;">جاري تحميل الإشارات...</p>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const client = supabase.createClient('https://bnfwhlvtxemldrcrhvhg.supabase.co', 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik');
+        const supabaseUrl = 'https://bnfwhlvtxemldrcrhvhg.supabase.co';
+        const supabaseKey = 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik';
+        const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function loadSignals() {
-            const { data, error } = await client.from('signals').select('*');
-            if (error) return;
+        async function fetchSignals() {
+            // جلب البيانات من الجدول
+            const { data, error } = await client
+                .from('signals')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-            const container = document.getElementById('container');
-            container.innerHTML = "";
-            
-            data.forEach(item => {
-                let asset = item.asset || 'N/A';
-                let dir = item.direction || 'انتظار';
-                let price = item.price || '0.00';
-                let per = item.percentage || '0';
+            if (error) {
+                console.error("خطأ:", error);
+                return;
+            }
 
-                let dirClass = dir === 'شراء' ? 'buy' : (dir === 'بيع' ? 'sell' : 'wait');
-                
+            const container = document.getElementById('signals-container');
+            container.innerHTML = ''; // تنظيف المحتوى
+
+            if (data.length === 0) {
+                container.innerHTML = '<p style="text-align:center;">لا توجد إشارات حالياً</p>';
+                return;
+            }
+
+            data.forEach(signal => {
                 container.innerHTML += `
                     <div class="signal-card">
-                        <div class="signal-box ${dirClass}">
-                            <span>${dir}</span>
+                        <div>
+                            <strong>${signal.asset}</strong><br>
+                            <small>الاتجاه: ${signal.direction}</small>
                         </div>
-                        <div class="info-box">
-                            <div class="symbol">${asset}</div>
-                            <div class="details">السعر: ${price} | النسبة: ${per}%</div>
+                        <div>
+                            <strong>${signal.confidence}%</strong>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
         }
-        
-        setInterval(loadSignals, 5000);
-        loadSignals();
+
+        // تشغيل الوظيفة عند فتح الصفحة
+        fetchSignals();
+
+        // تحديث تلقائي كل 5 ثوانٍ
+        setInterval(fetchSignals, 5000);
     </script>
 </body>
 </html>
