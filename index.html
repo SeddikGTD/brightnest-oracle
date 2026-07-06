@@ -1,20 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <title>BrightNest Oracle</title>
 </head>
 <body>
-    <div id="status">جاري الاتصال...</div>
+    <div id="status">يتم التحضير...</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = supabase.createClient('https://bnfwhlvtxemldrcrhvhg.supabase.co', 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik');
+        const statusDiv = document.getElementById('status');
         
-        supabase.from('signals').select('*').then(({ data, error }) => {
-            if (error) {
-                document.getElementById('status').innerText = "خطأ: " + error.message;
-            } else {
-                document.getElementById('status').innerText = "تم الاتصال! عدد البيانات: " + data.length;
+        async function connect() {
+            try {
+                statusDiv.innerText = "جاري الاتصال بقاعدة البيانات...";
+                const supabase = supabase.createClient(
+                    'https://bnfwhlvtxemldrcrhvhg.supabase.co', 
+                    'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik'
+                );
+                
+                const { data, error } = await supabase.from('signals').select('*');
+                
+                if (error) {
+                    statusDiv.innerText = "خطأ من قاعدة البيانات: " + error.message;
+                } else {
+                    statusDiv.innerText = "تم الاتصال! عدد البيانات: " + data.length;
+                }
+            } catch (err) {
+                statusDiv.innerText = "خطأ تقني: " + err.message;
             }
-        });
+        }
+        
+        // تشغيل الدالة
+        connect();
     </script>
 </body>
 </html>
