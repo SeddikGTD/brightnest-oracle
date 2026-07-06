@@ -1,0 +1,12 @@
+{
+  "name": "binary-options-app",
+  "version": "1.0.0",
+  "description": "Binary Options Trading Application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
