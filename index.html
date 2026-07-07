@@ -4,38 +4,47 @@
     <meta charset="UTF-8">
     <title>BrightNest Oracle</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #0c0b1a; color: #fff; font-family: sans-serif; padding: 20px; text-align: center; }
+        .signal-card { border: 1px solid #4e4e6a; padding: 15px; margin: 10px auto; border-radius: 10px; max-width: 300px; }
+    </style>
 </head>
 <body>
     <h1>إشارات التداول</h1>
-    <div id="signals-container">جاري التحميل...</div>
+    <div id="signals-container">جاري تحميل الإشارات...</div>
 
     <script>
-        const supabase = supabase.createClient('https://bnfwhlvtxemldrcrhvhg.supabase.co', 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik');
+        // تأكد من صحة هذه القيم من إعدادات Supabase (API Keys)
+        const supabaseUrl = 'https://bnfwhlvtxemldrcrhvhg.supabase.co';
+        const supabaseKey = 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         async function fetchSignals() {
             const container = document.getElementById('signals-container');
+            
+            // محاولة جلب البيانات
             const { data, error } = await supabase.from('signals').select('*');
             
             if (error) {
-                container.innerHTML = "خطأ من قاعدة البيانات: " + error.message;
+                container.innerHTML = "خطأ في الاتصال: " + error.message;
                 return;
             }
 
             if (!data || data.length === 0) {
-                container.innerHTML = "قاعدة البيانات فارغة حالياً (لا توجد إشارات).";
+                container.innerHTML = "قاعدة البيانات فارغة حالياً.";
                 return;
             }
 
             container.innerHTML = '';
             data.forEach(s => {
-                // ملاحظة: تأكد أن هذه الأسماء هي نفسها الموجودة في Supabase
-                container.innerHTML += `<div style="border:1px solid #4e4e6a; padding:10px; margin:10px;">
-                    <h3>${s.asset || 'غير معروف'}</h3>
-                    <p>الاتجاه: ${s.direction || 'غير معروف'}</p>
+                container.innerHTML += `<div class="signal-card">
+                    <h3>${s.asset || 'بدون زوج'}</h3>
+                    <p>الاتجاه: ${s.direction || 'غير محدد'}</p>
                     <p>الثقة: ${s.confidence || 0}%</p>
                 </div>`;
             });
         }
+        
         fetchSignals();
     </script>
 </body>
