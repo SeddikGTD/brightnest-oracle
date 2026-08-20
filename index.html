@@ -2,54 +2,51 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>BrightNest Oracle</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>BrightNest Oracle (Local)</title>
     <style>
         body { background: #0c0b1a; color: #fff; font-family: sans-serif; padding: 20px; text-align: center; }
         .signal-card { border: 1px solid #4e4e6a; padding: 15px; margin: 10px auto; border-radius: 10px; max-width: 350px; background: #1a1a2e; }
+        #status { margin-bottom: 10px; color: #bdbdbd; }
     </style>
 </head>
 <body>
-    <h1>إشارات التداول</h1>
-    <div id="signals-container">جاري فحص الاتصال...</div>
+    <h1>إشارات التداول - تجربة محلية</h1>
+    <div id="status">جاري الاتصال بالخادم...</div>
+    <div id="signals-container">جاري التحميل...</div>
 
     <script>
-        // إعداد العميل
-        const supabaseUrl = 'https://bnfwhlvtxemldrcrhvhg.supabase.co';
-        const supabaseKey = 'sb_publishable_vbbmxwqOzNif8GKsD3r6-Q_FfuNB3Ik';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        async function loadSignals() {
+        async function fetchSignals() {
+            const status = document.getElementById('status');
             const container = document.getElementById('signals-container');
-            
             try {
-                // جلب البيانات من جدول signals
-                const { data, error } = await supabase
-                    .from('signals')
-                    .select('*'); // جلب جميع الأعمدة
-
-                if (error) throw error;
-
+                const res = await fetch('/api/signals');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const payload = await res.json();
+                const data = payload.data || payload; // تقبل الشكل {ok:true,data:...} أو مصفوفة مباشرة
+                status.textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString();
                 if (!data || data.length === 0) {
-                    container.innerHTML = "قاعدة البيانات فارغة حالياً.";
-                } else {
-                    container.innerHTML = '';
-                    data.forEach(s => {
-                        container.innerHTML += `
-                            <div class="signal-card">
-                                <h3>الزوج: ${s.asset || 'غير محدد'}</h3>
-                                <p>الاتجاه: ${s.direction || 'غير محدد'}</p>
-                                <p>الثقة: ${s.confidence || 0}%</p>
-                            </div>`;
-                    });
+                    container.innerHTML = "لا توجد إشارات حالياً.";
+                    return;
                 }
+                container.innerHTML = '';
+                data.slice().reverse().forEach(s => {
+                    container.innerHTML += `
+                        <div class="signal-card">
+                            <h3>الزوج: ${s.asset_pair || s.asset || 'غير محدد'}</h3>
+                            <p>الاتجاه: ${s.action || s.direction || 'غير محدد'}</p>
+                            <p>الثقة: ${s.signal_strength ?? s.confidence ?? 0}%</p>
+                            <p style="font-size:0.85em;color:#9aa;">${s.created_at ? new Date(s.created_at).toLocaleString() : (s.time || '')}</p>
+                        </div>`;
+                });
             } catch (err) {
-                // هذا الجزء سيظهر الخطأ الحقيقي على الشاشة إذا وجد
-                container.innerHTML = "خطأ في الاتصال: " + err.message;
+                status.textContent = 'خطأ في الاتصال: ' + err.message;
+                container.innerHTML = '';
             }
         }
-        
-        loadSignals();
+
+        // تحديث فورياً ثم تكرار كل 3 ثوانٍ
+        fetchSignals();
+        setInterval(fetchSignals, 3000);
     </script>
 </body>
 </html>

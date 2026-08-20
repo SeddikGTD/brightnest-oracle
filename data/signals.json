@@ -1,0 +1,10 @@
+[
+  {
+    "id": "sig-1",
+    "asset_pair": "BTC/USD",
+    "action": "BUY",
+    "signal_strength": 78,
+    "entry_price": 69123.45,
+    "created_at": "2026-08-20T21:00:00Z"
+  }
+]
